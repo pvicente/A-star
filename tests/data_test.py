@@ -3,7 +3,7 @@ Created on Mar 5, 2013
 
 @author: pvicente
 '''
-from src.data import Node
+from src.data import Node, City
 from src.data_exceptions import NotValid2DPointFormat, WrongLink
 import unittest
 
@@ -106,6 +106,32 @@ class TestNode(unittest.TestCase):
         
         for node in nodes.values():
             self.assertNotEqual(node.links , set(), msg='%s has not links with other nodes'%(node.name))
+
+
+class TestCity(unittest.TestCase):
+    def setUp(self):
+        pass
+    
+    def test_links(self):
+        '''
+        Tset links are created in both ways (origin, end) (end, origin)
+        '''
+        cities={'Madrid': City('Madrid', (0,0)), 'Barcelona': City('Barcelona', (10,10)), 'Albacete': City('Albacete', (3,4))}
+        links = [('Madrid', 'Barcelona'), ('Albacete', 'Madrid')]
+        notlinks = [('Barcelona', 'Albacete'), ('Albacete', 'Barcelona')]
         
+        for origin, end in links:
+            cities[origin].addLink(cities[end])
+        
+        for origin, end in links:
+            self.assertIn(cities[end], cities[origin].links)
+            self.assertIn(cities[origin], cities[end].links)
+        
+        for origin, end in notlinks:
+            self.assertNotIn(cities[origin], cities[end].links)
+        
+        for city in cities.values():
+            self.assertNotEqual(city.links , set(), msg='%s has not links with other cities'%(city.name))
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
