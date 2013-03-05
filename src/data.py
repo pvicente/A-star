@@ -3,7 +3,8 @@ Created on Mar 5, 2013
 
 @author: pvicente
 '''
-from data_exceptions import NotValid2DPointFormat,WrongLink
+from data_exceptions import NotValid2DPointFormat, WrongLink, NotCities, NotLinks, NotValidCitiesFormat, \
+    NotValidLinksFormat
 from math import sqrt
 
 class Node(object):
@@ -108,4 +109,51 @@ class City(Node):
             city.addLink(self)
 
 
-
+class CityMap(object):
+    def __init__(self):
+        self._map = {}
+        self._links = []
+    
+    @classmethod
+    def load(cls, data):
+        loaded_cities = data.get('cities')
+        loaded_links = data.get('links')
+        
+        if loaded_cities is None:
+            raise NotCities
+        
+        if loaded_links is None:
+            raise NotLinks
+        
+        if not isinstance(loaded_cities, dict) or loaded_cities is dict() or not isinstance(loaded_cities.keys()[0], basestring):
+            raise NotValidCitiesFormat()
+        
+        if not isinstance(loaded_links, list) and not isinstance(loaded_links, tuple):
+            raise NotValidLinksFormat()
+        
+        cities = {}
+        for name, point2D in loaded_cities.iteritems():
+            cities[name] = City(name, point2D)
+        
+        for link in loaded_links:
+            if not isinstance(link, list) and not isinstance(link, tuple):
+                raise NotValidLinksFormat()
+            
+            origin, end = link
+            if not origin in cities or not end in cities:
+                raise WrongLink(origin, end)
+            cities[origin].addLink(cities[end])
+        
+        ret = CityMap()
+        ret._map = cities
+        ret._links = loaded_links
+        return ret
+    
+    def __getitem__(self, key):
+        return self._map.get(key)
+    
+    def values(self):
+        return self._map.values()
+    
+    def keys(self):
+        return self._map.keys() 
