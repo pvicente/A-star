@@ -137,7 +137,27 @@ class TestCity(unittest.TestCase):
 
 class TestCityMap(unittest.TestCase):
     def setUp(self):
-        self.data = {'cities': {'Madrid': [0,0], 'Barcelona': [10,10], 'Albacete': [3,4]}, 'links': [['Madrid', 'Barcelona'], ['Albacete', 'Barcelona']]}
+        '''
+        Preparing input data to perform some tests
+        '''
+        import json, tempfile
+        self.data = {u'cities': {u'Madrid': [0,0], u'Barcelona': [10,10], u'Albacete': [3,4]}, u'links': [[u'Madrid', u'Barcelona'], [u'Albacete', u'Barcelona']]}
+        self.json_data = json.dumps(self.data)
+        
+        tmp_input = tempfile.mkstemp()
+        input_file = open(tmp_input[1], 'w')
+        self.input_filename = tmp_input[1]
+        json.dump(self.data, input_file)
+        input_file.close() 
+        self.output_filename = tempfile.mkstemp()[1] 
+    
+    def tearDown(self):
+        '''
+        Removing unused files
+        '''
+        import os
+        os.remove(self.input_filename)
+        os.remove(self.output_filename)
     
     def test_load_exceptions(self):
         '''
@@ -181,6 +201,55 @@ class TestCityMap(unittest.TestCase):
         '''
         citymap = CityMap.load(self.data)
         self.check_load_data(citymap)
+    
+    def test_load_string(self):
+        '''
+        Test loading data from string format. 
+        '''
+        citymap = CityMap.loadFromString(self.json_data)
+        self.check_load_data(citymap)
+    
+    def test_load_filename(self):
+        '''
+        Test loading data from filename
+        '''
+        citymap = CityMap.loadFromFile(self.input_filename)
+        self.check_load_data(citymap)
+    
+    def test_load_bad_filename(self):
+        '''
+        Test exception launched due to bad filename
+        '''
+        import tempfile, os
+        tmpfile = tempfile.mkstemp()
+        os.remove(tmpfile[1])
+        self.assertRaises(IOError, CityMap.loadFromFile, tmpfile[1])
+    
+    def test_not_data_in_file(self):
+        '''
+        Test exception launched due to not json data in file
+        '''
+        import tempfile, os
+        tmpfile = tempfile.mkstemp()
+        self.assertRaises(ValueError, CityMap.loadFromFile, tmpfile[1])
+        os.remove(tmpfile[1])
+    
+    def test_not_data_in_string(self):
+        '''
+        Test exception launched due to not json data in string
+        '''
+        self.assertRaises(ValueError, CityMap.loadFromString, '')
+    
+    def test_save(self):
+        '''
+        Test check that load and save processes don't modify input/output format
+        '''
+        import tempfile, os, json
+        citymap = CityMap.loadFromString(self.json_data)
+        tmpfile = tempfile.mkstemp()
+        citymap.save(tmpfile[1])
+        self.assertEqual(str(self.data), str(json.load(open(tmpfile[1]))))
+        os.remove(tmpfile[1])
     
 if __name__ == '__main__':
     unittest.main(verbosity=2)
