@@ -91,7 +91,7 @@ class Cities_AStarSolver(object):
                 if neighbor in closed_set:
                     if tentative_g_score >= g_score[neighbor.name]:
                         continue
-                if not neighbor in open_set or tentative_g_score < g_score[neighbor]:
+                if not neighbor in open_set or tentative_g_score < g_score[neighbor.name]:
                     came_from[neighbor.name] = current.name
                     g_score[neighbor.name] = tentative_g_score
                     current_f_score = tentative_g_score + heuristic_cost(neighbor, goal_city)
