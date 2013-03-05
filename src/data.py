@@ -88,3 +88,24 @@ class Node(object):
     
     def __repr__(self):
         return str(self)
+
+
+class City(Node):
+    '''
+    City object with double link behaviour when addLink is performed.
+    Other behaviour inherited from Node
+    '''
+    def __init__(self, name, point2D):
+        super(City, self).__init__(point2D, name)
+    
+    def addLink(self, city):
+        '''
+        A road map doesn't have directed nodes and a double link is performed between nodes
+        '''
+        Node.addLink(self, city)
+        
+        if not self in city.links:
+            city.addLink(self)
+
+
+
