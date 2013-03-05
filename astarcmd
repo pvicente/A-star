@@ -1,0 +1,106 @@
+#!/usr/bin/env python
+'''
+astarcmd -- resolves finding paths in road maps with A-Star algorithm
+
+astarcmd is a description
+
+It defines classes_and_methods
+
+@author:     Pedro Vicente
+        
+@copyright:  2013 Biicode test. All rights reserved.
+        
+@license:    license
+
+@contact:    pedrovfer@gmail.com
+@deffield    updated: Updated
+'''
+
+import sys
+import os
+
+from argparse import ArgumentParser
+from argparse import RawDescriptionHelpFormatter
+
+__all__ = []
+__version__ = 0.1
+__date__ = '2013-03-05'
+__updated__ = '2013-03-05'
+
+DEBUG = 1
+TESTRUN = 0
+PROFILE = 0
+
+class CLIError(Exception):
+    '''Generic exception to raise and log different fatal errors.'''
+    def __init__(self, msg):
+        super(CLIError).__init__(type(self))
+        self.msg = "E: %s" % msg
+    def __str__(self):
+        return self.msg
+    def __unicode__(self):
+        return self.msg
+
+def main(argv=None): # IGNORE:C0111
+    '''Command line options.'''
+    
+    if argv is None:
+        argv = sys.argv
+    else:
+        sys.argv.extend(argv)
+
+    program_name = os.path.basename(sys.argv[0])
+    program_version = "v%s" % __version__
+    program_build_date = str(__updated__)
+    program_version_message = '%%(prog)s %s (%s)' % (program_version, program_build_date)
+    program_shortdesc = __import__('__main__').__doc__.split("\n")[1]
+    program_license = '''%s
+
+  Created by Pedro Vicente on %s.
+  Copyright 2013. All rights reserved.
+  
+  Licensed under the Apache License 2.0
+  http://www.apache.org/licenses/LICENSE-2.0
+  
+  Distributed on an "AS IS" basis without warranties
+  or conditions of any kind, either express or implied.
+
+USAGE
+''' % (program_shortdesc, str(__date__))
+
+    try:
+        # Setup argument parser
+        parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
+        parser.add_argument('-V', '--version', action='version', version=program_version_message)
+        parser.add_argument(dest="file", help="path to file with roadmap ")
+        parser.add_argument("-o", "--origin", help="origin of route.From city")
+        parser.add_argument("-e", "--end", help="end of route. Goal city")
+        
+        # Process arguments
+        args = parser.parse_args()
+        if args.origin is None:
+            print 'too few arguments. origin argument mandatory. See help'
+            return 2
+        
+        if args.end is None:
+            print 'too few arguments. end argument mandatory. See help'
+            return 2
+        
+        from src.data import CityMap
+        citymap = CityMap.loadFromFile(args.file)
+        from src.astarsolver import Cities_AStarSolver
+        solver = Cities_AStarSolver(citymap)
+        route, cost = solver.route(args.origin, args.end)
+        if route is None:
+            print 'There is any route to go from %s to %s in map defined in %s'%(args.origin, args.end, args.file)
+        else:
+            print 'Route: %s with cost %s has been detected wiht A-Star Algorithm in map defined in %s'%(route, cost, args.file)
+        return 0
+    except KeyboardInterrupt:
+        ### handle keyboard interrupt ###
+        return 0
+    except Exception:
+        raise
+
+if __name__ == "__main__":
+    sys.exit(main())

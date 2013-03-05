@@ -1,0 +1,1 @@
+{"cities": {"Madrid": [0, 0], "Barcelona": [10, 10], "Albacete": [3, 4]}, "links": [["Madrid", "Barcelona"], ["Albacete", "Barcelona"]]}
