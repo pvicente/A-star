@@ -6,6 +6,7 @@ Created on Mar 5, 2013
 from data_exceptions import NotValid2DPointFormat, WrongLink, NotCities, NotLinks, NotValidCitiesFormat, \
     NotValidLinksFormat
 from math import sqrt
+import json
 
 class Node(object):
     '''
@@ -148,6 +149,22 @@ class CityMap(object):
         ret._map = cities
         ret._links = loaded_links
         return ret
+    
+    @classmethod
+    def loadFromFile(cls, filename):
+        f = open(filename)
+        return cls.load(json.load(f))
+    
+    @classmethod
+    def loadFromString(cls, string):
+        return cls.load(json.loads(string))
+    
+    def save(self, filename):
+        f = open(filename,'w')
+        output_cities = dict([(name, [city.x, city.y]) for name, city in self._map.iteritems()])
+        output = {'cities': output_cities, 'links': self._links}
+        json.dump(output, f)
+        f.close()
     
     def __getitem__(self, key):
         return self._map.get(key)
