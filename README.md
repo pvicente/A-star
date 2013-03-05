@@ -3,6 +3,13 @@ A-star
 
 Solving A-Star Algorithm for a city map.
 
+###First version structure
+* **astarcmd**: Executable from command line
+* **testall.bash**: Perfom all tests defined in test folder
+* **examples**: folder with example configuration files
+* **src**: folder with source files
+* **tests**: folder with tests files
+
 ###Use case
 ```
 >>./astarcmd examples/basic_citymap.map -o Madrid -e Albacete
