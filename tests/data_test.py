@@ -3,8 +3,9 @@ Created on Mar 5, 2013
 
 @author: pvicente
 '''
-from src.data import Node, City
-from src.data_exceptions import NotValid2DPointFormat, WrongLink
+from src.data import Node, City, CityMap
+from src.data_exceptions import NotValid2DPointFormat, WrongLink, NotCities, \
+    NotLinks, NotValidCitiesFormat, NotValidLinksFormat
 import unittest
 
 class TestNode(unittest.TestCase):
@@ -133,5 +134,53 @@ class TestCity(unittest.TestCase):
         for city in cities.values():
             self.assertNotEqual(city.links , set(), msg='%s has not links with other cities'%(city.name))
 
+
+class TestCityMap(unittest.TestCase):
+    def setUp(self):
+        self.data = {'cities': {'Madrid': [0,0], 'Barcelona': [10,10], 'Albacete': [3,4]}, 'links': [['Madrid', 'Barcelona'], ['Albacete', 'Barcelona']]}
+    
+    def test_load_exceptions(self):
+        '''
+        Testing raising exceptions due to not valid data format
+        '''
+        self.assertRaises(NotCities, CityMap.load, {})
+        self.assertRaises(NotLinks, CityMap.load, {'cities': []})
+        self.assertRaises(NotValidCitiesFormat, CityMap.load, {'cities': [], 'links': []})
+        self.assertRaises(NotValidCitiesFormat, CityMap.load, {'cities': {1: [1,2]}, 'links': []})
+        self.assertRaises(NotValid2DPointFormat, CityMap.load, {'cities': {'name': 'wrongpoint'}, 'links': []})
+        self.assertRaises(NotValidLinksFormat, CityMap.load, {'cities': {'name': [1,2]}, 'links': 'wronglink'})
+        self.assertRaises(NotValidLinksFormat, CityMap.load, {'cities': {'Madrid': [0,0], 'Barcelona': [10,10]}, 'links': [1,2]})
+        self.assertRaises(WrongLink, CityMap.load, {'cities': {'Madrid': [0,0], 'Barcelona': [10,10]}, 'links': [[1,2]]})
+    
+    def test_load_instance(self):
+        '''
+        Testing right construction with a valid input format
+        '''
+        self.assertIsInstance(CityMap.load({'cities': {'Madrid': [0,0], 'Barcelona': [10,10.0]}, 'links': [['Madrid','Barcelona']]}), CityMap)
+    
+    def check_load_data(self, citymap):
+        '''
+        Check function to check that input data is being represented correctly
+        '''
+        for cityname in self.data['cities']:
+            city = citymap[cityname]
+            self.assertNotEqual(city, None)
+            x,y = self.data['cities'][cityname]
+            self.assertEqual(city.x, x)
+            self.assertEqual(city.y, y)
+            related_links = [link for link in self.data['links'] if link[0] == cityname or link[1] == cityname]
+            for link in related_links:
+                origin, end = link
+                if origin != cityname:
+                    end = origin
+                self.assertIn(end, [c.name for c in city.links])
+    
+    def test_load_data(self):
+        '''
+        Test input data
+        '''
+        citymap = CityMap.load(self.data)
+        self.check_load_data(citymap)
+    
 if __name__ == '__main__':
     unittest.main(verbosity=2)
