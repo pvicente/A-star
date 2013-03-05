@@ -6,6 +6,7 @@ Created on Mar 5, 2013
 import unittest
 from src.data import CityMap
 from src.astarsolver import Cities_AStarSolver
+from src.astar_exceptions import FromCityNotFound, GoalCityNotFound
 
 class TestAStar(unittest.TestCase):
     def setUp(self):
@@ -27,6 +28,15 @@ class TestAStar(unittest.TestCase):
             cost += current_city.distance(city)
             current_city=city
         return cost
+    
+    def test_exceptions(self):
+        '''
+        Test astar own exceptions are launched
+        '''
+        data = {u'cities': {u'Madrid': [0,0], u'Barcelona': [10,10], u'Albacete': [3,4]}, u'links': [[u'Madrid', u'Barcelona']]}
+        a_star = Cities_AStarSolver(CityMap.load(data))
+        self.assertRaises(FromCityNotFound, a_star.route, from_city=None, target_city=None)
+        self.assertRaises(GoalCityNotFound, a_star.route, from_city='Madrid', target_city=None)
     
     def test_no_route(self):
         '''

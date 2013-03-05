@@ -21,10 +21,10 @@ class Cities_AStarSolver(object):
         cost: cost over route
         '''
         if self.cities[from_city] is None:
-            raise FromCityNotFound()
+            raise FromCityNotFound(from_city)
         
         if self.cities[target_city] is None:
-            raise GoalCityNotFound
+            raise GoalCityNotFound(target_city)
         
         from_city = self.cities[from_city]
         goal_city = self.cities[target_city]
